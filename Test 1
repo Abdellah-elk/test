@@ -1,0 +1,48 @@
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class SpotBugsAdvancedTest {
+
+    // Suppression de l'utilisation inutile de new String("Hello")
+    public static void badStringComparison() {
+        String str1 = "Hello";
+        String str2 = "Hello";
+
+        if (str1.equals(str2)) {  // Utilisation correcte de equals
+            System.out.println("Les chaînes sont égales.");
+        }
+    }
+
+    // Lecture sécurisée d'un fichier avec UTF-8 et try-with-resources
+    public void processFile(String filePath) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(Files.newInputStream(Paths.get(filePath)), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
+        }
+    }
+
+    // Utilisation de Files.newInputStream pour éviter les erreurs avec FileInputStream
+    public void leakyResource() {
+        try (InputStream fis = Files.newInputStream(Paths.get("dummy.txt"))) {
+            System.out.println("Fichier ouvert.");
+        } catch (IOException e) {
+            System.err.println("Erreur : Le fichier dummy.txt est introuvable !");
+        }
+    }
+
+    public static void main(String[] args) {
+        SpotBugsAdvancedTest test = new SpotBugsAdvancedTest();
+
+        // Test des méthodes corrigées
+        badStringComparison();
+        test.processFile("test.txt");  // Assurez-vous que ce fichier existe
+        test.leakyResource();  // Assurez-vous que dummy.txt existe sinon il affichera un message d'erreur
+    }
+}
